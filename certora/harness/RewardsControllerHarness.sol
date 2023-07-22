@@ -22,4 +22,8 @@ contract RewardsControllerHarness is RewardsController {
     function getLatestAnswer(IEACAggregatorProxy oracle) external view returns(int256){
         return oracle.latestAnswer();
     }
+
+    function isContract(address addr) external view returns(bool){
+        return _isContract(addr);
+    }
 }

@@ -26,6 +26,8 @@ using RewardsDataTypes as _RewardsDataTypes;
         // constant 
         function EMISSION_MANAGER() external returns(address) envfree;
 
+        // Harness
+        function isContract(address) external returns(bool) envfree;
         //envfree functions
         function getUserAccruedRewards(address, address ) external returns(uint256) envfree; 
         function getClaimer(address) external returns (address) envfree;

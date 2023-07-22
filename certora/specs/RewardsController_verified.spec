@@ -23,7 +23,10 @@ rule setTransferStrategy_integrity(
     address transferStrategy
 ) {
     setTransferStrategy(e, reward, transferStrategy);
-    assert getTransferStrategy(reward) == transferStrategy <=> e.msg.sender == EMISSION_MANAGER();
+    assert getTransferStrategy(reward) == transferStrategy 
+        <=> e.msg.sender == EMISSION_MANAGER()
+        && isContract(transferStrategy) 
+        && transferStrategy != 0;
 }
 
 rule setRewardOracle_integrity(
