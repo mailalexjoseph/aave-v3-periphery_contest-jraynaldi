@@ -27,7 +27,7 @@ contract RewardsControllerHarness is RewardsController {
         return _isContract(addr);
     }
 
-    // function getAssetData(address asset) external view returns(RewardsDataTypes.AssetData memory) {
-    //     return _assets[asset];
-    // } 
+    function getAvailableRewardsCount(address asset) external view returns(RewardsDataTypes.AssetData memory) {
+        return _assets[asset].availableRewardsCount;
+    } 
 }

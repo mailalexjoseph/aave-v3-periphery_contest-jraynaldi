@@ -1,7 +1,10 @@
 import "methods/Methods_base.spec";
 
 ///////////////// Properties ///////////////////////
-
+/** Properties in consideration
+* user reward index should never decrease alongside with reward index all over the contract
+*
+*/
 /*//////////////////////////////////////////////////////////////
                             Unit Test
 //////////////////////////////////////////////////////////////*/
@@ -48,4 +51,14 @@ rule setRewardOracle_integrity(
     assert getRewardOracle(reward) == rewardOracle 
         <=> e.msg.sender == EMISSION_MANAGER()
         && latestAnswer > 0 ;
+}
+
+rule handleAction_integrity(
+    env e,
+    address user, 
+    uint256 totalSupply,
+    uint256 userBalance
+) {
+    handleAction(e,user, totalSupply,userBalance)
+    assert false
 }
