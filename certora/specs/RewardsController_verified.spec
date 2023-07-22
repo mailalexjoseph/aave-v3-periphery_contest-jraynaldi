@@ -25,3 +25,15 @@ rule setTransferStrategy_integrity(
     setTransferStrategy(e, reward, transferStrategy);
     assert getTransferStrategy(reward) == transferStrategy <=> e.msg.sender == EMISSION_MANAGER();
 }
+
+rule setRewardOracle_integrity(
+    env e,
+    address reward,
+    address rewardOracle
+) {
+    mathint latestAnswer = getLatestAnswer(e, rewardOracle);
+    setRewardOracle(e, reward, rewardOracle);
+    assert getRewardOracle(reward) == rewardOracle 
+        <=> e.msg.sender == EMISSION_MANAGER()
+        && latestAnswer > 0 ;
+}

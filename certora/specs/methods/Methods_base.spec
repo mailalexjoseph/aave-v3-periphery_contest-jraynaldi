@@ -21,7 +21,7 @@ using RewardsDataTypes as _RewardsDataTypes;
         function _.performTransfer(address, address, uint256) external => DISPATCHER(true);
 
         // Oracle - assume any value 
-        function _.latestAnswer() external => NONDET;
+        function _.latestAnswer() external => CONSTANT;
 
         // constant 
         function EMISSION_MANAGER() external returns(address) envfree;
