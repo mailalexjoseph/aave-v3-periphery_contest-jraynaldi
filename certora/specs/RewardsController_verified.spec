@@ -6,6 +6,7 @@ import "methods/Methods_base.spec";
                             Unit Test
 //////////////////////////////////////////////////////////////*/
 
+//TODO not completed 
 rule configureAssetsSingle(
     env e,
     env e1,
@@ -13,8 +14,16 @@ rule configureAssetsSingle(
 ) {
     address reward = config.reward;
     configureAssetsSingle(e,config);
+    uint256 index;
+    uint256 emissionPerSecond;
+    uint256 lastUpdateTimestamp;
+    uint256 distributionEnd;
+    index, emissionPerSecond, lastUpdateTimestamp, distributionEnd = getRewardsData(config.asset, config.reward);
     assert getTransferStrategy(reward) == config.transferStrategy;
     assert getRewardOracle(reward) == config.rewardOracle;
+    assert to_mathint(lastUpdateTimestamp) == to_mathint(e.block.timestamp);
+    assert to_mathint(emissionPerSecond) == to_mathint(config.emissionPerSecond);
+    assert to_mathint(distributionEnd) == to_mathint(config.distributionEnd);
 }
 
 rule setTransferStrategy_integrity(
