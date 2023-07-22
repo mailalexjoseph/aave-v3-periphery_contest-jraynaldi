@@ -23,10 +23,14 @@ using RewardsDataTypes as _RewardsDataTypes;
         // Oracle - assume any value 
         function _.latestAnswer() external => NONDET;
 
+        // constant 
+        function EMISSION_MANAGER() external returns(address) envfree;
+
         //envfree functions
         function getUserAccruedRewards(address, address ) external returns(uint256) envfree; 
         function getClaimer(address) external returns (address) envfree;
         function getTransferStrategy(address) external returns (address) envfree;
+        function getRewardOracle(address) external returns(address) envfree;
     }
 
 ///////////////// DEFINITIONS //////////////////////
