@@ -1,7 +1,7 @@
 import "./ERC20_methods.spec";
 
 using DummyERC20_AToken as AToken;
-
+using RewardsDataTypes as _RewardsDataTypes;
 /////////////////// Methods ////////////////////////
 
     methods {
@@ -10,6 +10,8 @@ using DummyERC20_AToken as AToken;
         function getRewardsData(address, address) external returns (uint256, uint256, uint256, uint256) envfree;
         function getUserAssetIndex(address, address, address) external returns (uint256) envfree;
         
+        //internal 
+
         // AToken functions
         function _.getScaledUserBalanceAndSupply(address) external => DISPATCHER(true);
         function _.scaledTotalSupply() external => DISPATCHER(true);
@@ -24,6 +26,7 @@ using DummyERC20_AToken as AToken;
         //envfree functions
         function getUserAccruedRewards(address, address ) external returns(uint256) envfree; 
         function getClaimer(address) external returns (address) envfree;
+        function getTransferStrategy(address) external returns (address) envfree;
     }
 
 ///////////////// DEFINITIONS //////////////////////
