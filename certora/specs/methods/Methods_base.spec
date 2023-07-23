@@ -26,13 +26,18 @@ using RewardsDataTypes as _RewardsDataTypes;
         // constant 
         function EMISSION_MANAGER() external returns(address) envfree;
 
-        // Harness
+        // Harness view
         function isContract(address) external returns(bool) envfree;
+        function getAvailableRewardsCount(address) external returns(uint128) envfree;
+        function getTotalSupply(address) external returns(uint256) envfree;
+
         //envfree functions
         function getUserAccruedRewards(address, address ) external returns(uint256) envfree; 
         function getClaimer(address) external returns (address) envfree;
         function getTransferStrategy(address) external returns (address) envfree;
         function getRewardOracle(address) external returns(address) envfree;
+        function getAssetDecimals(address) external returns(uint8) envfree;
+        function getRewardsByAsset(address) external returns(address[] memory) envfree;
     }
 
 ///////////////// DEFINITIONS //////////////////////

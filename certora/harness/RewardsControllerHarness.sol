@@ -4,6 +4,7 @@ pragma solidity ^0.8.10;
 import {RewardsController} from '../../contracts/rewards/RewardsController.sol';
 import {RewardsDataTypes} from '../../contracts/rewards/libraries/RewardsDataTypes.sol';
 import {IEACAggregatorProxy} from '../../contracts/misc/interfaces/IEACAggregatorProxy.sol';
+import {IScaledBalanceToken} from '@aave/core-v3/contracts/interfaces/IScaledBalanceToken.sol';
 
 contract RewardsControllerHarness is RewardsController {
     
@@ -27,7 +28,25 @@ contract RewardsControllerHarness is RewardsController {
         return _isContract(addr);
     }
 
-    function getAvailableRewardsCount(address asset) external view returns(RewardsDataTypes.AssetData memory) {
+    function getAvailableRewardsCount(address asset) external view returns(uint128) {
         return _assets[asset].availableRewardsCount;
     } 
+
+    function getTotalSupply(address asset) external view returns(uint256) {
+        return IScaledBalanceToken(asset).scaledTotalSupply();
+    }
+
+    function getAssetIndex(address asset, address reward, uint256 totalSupply) 
+        external 
+        view 
+        returns(uint256, uint256)
+    {
+    RewardsDataTypes.RewardData storage rewardData = _assets[asset].rewards[reward];
+    return
+        _getAssetIndex(
+            rewardData,
+            totalSupply,
+            10**_assets[asset].decimals
+        );
+    }
 }
