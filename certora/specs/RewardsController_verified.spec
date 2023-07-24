@@ -201,3 +201,39 @@ rule claimRewardOnBehalf(
             <=> currentContract == getClaimer(user);
     }
 }
+
+rule claimRewardToSelf(
+    env e,
+    env e1,
+    address asset,
+    uint256 amount,
+    address reward
+) {
+    require e1.msg.sender == AToken;
+    require reward == RewardToken;
+    require asset == AToken;
+    require e.msg.sender == currentContract;
+    require e.block.timestamp == e1.block.timestamp;
+    require e.msg.sender != TransferStrategy;
+    uint256 userBalance = AToken.scaledBalanceOf(e, e.msg.sender);
+    uint256 totalSupply = AToken.scaledTotalSupply(e);
+    handleAction(e1, e.msg.sender, totalSupply, userBalance);
+
+    uint256 rewardBalanceBefore = RewardToken.balanceOf(e, e.msg.sender);
+    mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
+    require userAccruedBefore >= 0;
+
+    claimRewardToSelf(e, asset, amount,  reward);
+
+    mathint userAccruedAfter = userAccrued[e.msg.sender][asset][reward];
+    uint256 rewardBalanceAfter = RewardToken.balanceOf(e, e.msg.sender);
+
+    assert userAccruedAfter == userAccruedBefore - amount 
+        <=> userAccruedBefore >= to_mathint(amount) || amount == 0;
+    assert userAccruedAfter == 0 <=> userAccruedBefore <= to_mathint(amount);
+    if (to_mathint(amount) < userAccruedBefore) {
+        assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + amount;
+    } else {
+        assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
+    }
+}

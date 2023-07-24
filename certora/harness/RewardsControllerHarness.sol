@@ -72,4 +72,14 @@ contract RewardsControllerHarness is RewardsController {
         assets[0] = asset;
         this.claimRewardsOnBehalf(assets, amount, user, to ,reward);
     }
+
+    function claimRewardToSelf(
+        address asset,
+        uint256 amount,
+        address reward
+    ) external {
+        address[] memory assets = new address[](1);
+        assets[0] = asset;
+        this.claimRewardsToSelf(assets, amount,reward);
+    }
 }
