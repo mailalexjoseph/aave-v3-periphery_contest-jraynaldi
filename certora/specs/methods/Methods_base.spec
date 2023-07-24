@@ -2,6 +2,7 @@ import "./ERC20_methods.spec";
 
 using DummyERC20_AToken as AToken;
 using RewardsDataTypes as _RewardsDataTypes;
+using DummyERC20_rewardToken as RewardToken;
 /////////////////// Methods ////////////////////////
 
     methods {

@@ -49,4 +49,15 @@ contract RewardsControllerHarness is RewardsController {
             10**_assets[asset].decimals
         );
     }
+
+    function claimReward(
+        address asset,
+        uint256 amount,
+        address to,
+        address reward
+    ) external {
+        address[] memory assets = new address[](1);
+        assets[0] = asset;
+        this.claimRewards(assets, amount,to, reward);
+    }
 }

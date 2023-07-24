@@ -1,5 +1,5 @@
 import "methods/Methods_base.spec";
-
+using TransferStrategyHarness as TransferStrategy;
 ///////////////// Properties ///////////////////////
 /** Properties in consideration
 * user reward index should never decrease alongside with reward index all over the contract
@@ -123,4 +123,41 @@ rule handleAction_integrity_user(
     assert userAccruedAfter == userAccruedBefore + ((userBalance * (newIndexCalc - oldUserIndex)) / 10 ^ decimals);
     assert userAccruedAfter != userAccruedBefore => userBalance != 0;
     assert userAccruedAfter != userAccruedBefore => oldUserIndex != newIndexCalc;
+}
+
+rule claimReward_integrity(
+    env e,
+    env e1,
+    address asset,
+    uint256 amount,
+    address to,
+    address reward
+) {
+    require e1.msg.sender == AToken;
+    require reward == RewardToken;
+    require asset == AToken;
+    require e.msg.sender == currentContract;
+    require e.block.timestamp == e1.block.timestamp;
+    require to != TransferStrategy;
+    uint256 userBalance = AToken.scaledBalanceOf(e, e.msg.sender);
+    uint256 totalSupply = AToken.scaledTotalSupply(e);
+    handleAction(e1, e.msg.sender, totalSupply, userBalance);
+
+    uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
+    mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
+    require userAccruedBefore >= 0;
+
+    claimReward(e, asset, amount, to, reward);
+
+    mathint userAccruedAfter = userAccrued[e.msg.sender][asset][reward];
+    uint256 rewardBalanceAfter = RewardToken.balanceOf(e, to);
+
+    assert userAccruedAfter == userAccruedBefore - amount 
+        <=> userAccruedBefore >= to_mathint(amount) || amount == 0;
+    assert userAccruedAfter == 0 <=> userAccruedBefore <= to_mathint(amount);
+    if (to_mathint(amount) < userAccruedBefore) {
+        assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + amount;
+    } else {
+        assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
+    }
 }
