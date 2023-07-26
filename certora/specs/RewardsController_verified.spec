@@ -125,6 +125,15 @@ rule handleAction_integrity_user(
     assert userAccruedAfter != userAccruedBefore => oldUserIndex != newIndexCalc;
 }
 
+function claimRewardSetup(env e, env e1, address to, address reward, address asset) {
+    require e1.msg.sender == AToken;
+    require reward == RewardToken;
+    require asset == AToken;
+    require e.msg.sender == currentContract;
+    require e.block.timestamp == e1.block.timestamp;
+    require to != TransferStrategy;
+}
+
 rule claimReward_integrity(
     env e,
     env e1,
@@ -133,12 +142,8 @@ rule claimReward_integrity(
     address to,
     address reward
 ) {
-    require e1.msg.sender == AToken;
-    require reward == RewardToken;
-    require asset == AToken;
-    require e.msg.sender == currentContract;
-    require e.block.timestamp == e1.block.timestamp;
-    require to != TransferStrategy;
+    claimRewardSetup(e,e1,to,reward,asset);
+
     uint256 userBalance = AToken.scaledBalanceOf(e, e.msg.sender);
     uint256 totalSupply = AToken.scaledTotalSupply(e);
     handleAction(e1, e.msg.sender, totalSupply, userBalance);
@@ -171,12 +176,8 @@ rule claimRewardOnBehalf(
     address to,
     address reward
 ) {
-    require e1.msg.sender == AToken;
-    require reward == RewardToken;
-    require asset == AToken;
-    require e.msg.sender == currentContract;
-    require e.block.timestamp == e1.block.timestamp;
-    require to != TransferStrategy;
+    claimRewardSetup(e,e1,to,reward,asset);
+
     uint256 userBalance = AToken.scaledBalanceOf(e, user);
     uint256 totalSupply = AToken.scaledTotalSupply(e);
     handleAction(e1, user, totalSupply, userBalance);
@@ -209,12 +210,8 @@ rule claimRewardToSelf(
     uint256 amount,
     address reward
 ) {
-    require e1.msg.sender == AToken;
-    require reward == RewardToken;
-    require asset == AToken;
-    require e.msg.sender == currentContract;
-    require e.block.timestamp == e1.block.timestamp;
-    require e.msg.sender != TransferStrategy;
+    claimRewardSetup(e,e1,e.msg.sender,reward,asset);
+
     uint256 userBalance = AToken.scaledBalanceOf(e, e.msg.sender);
     uint256 totalSupply = AToken.scaledTotalSupply(e);
     handleAction(e1, e.msg.sender, totalSupply, userBalance);
@@ -237,3 +234,13 @@ rule claimRewardToSelf(
         assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
     }
 }
+
+// rule claimAllReward(
+//     env e,
+//     env e1,
+//     address asset,
+//     uint256 amount,
+//     address reward
+// ) {
+//     claimRewardSetup(e,e1,to,reward,asset);
+// }
