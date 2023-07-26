@@ -235,12 +235,38 @@ rule claimRewardToSelf(
     }
 }
 
-// rule claimAllReward(
-//     env e,
-//     env e1,
-//     address asset,
-//     uint256 amount,
-//     address reward
-// ) {
-//     claimRewardSetup(e,e1,to,reward,asset);
-// }
+rule claimAllReward(
+    env e,
+    env e1,
+    address asset,
+    address to,
+    address reward
+) {
+    claimRewardSetup(e,e1,to,reward,asset);
+    claimAllReward(e, asset, to);
+    assert false;
+}
+
+rule claimAllRewardOnBehalf(
+    env e,
+    env e1,
+    address asset,
+    address to,
+    address reward
+) {
+    claimRewardSetup(e,e1,to,reward,asset);
+    claimAllRewardOnBehalf(e, asset, to);
+    assert false;
+}
+
+rule claimAllRewardToSelf(
+    env e,
+    env e1,
+    address asset,
+    address to,
+    address reward
+) {
+    claimRewardSetup(e,e1,to,reward,asset);
+    claimAllRewardToSelf(e, asset, to);
+    assert false;
+}
