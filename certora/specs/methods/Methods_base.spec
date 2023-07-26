@@ -33,6 +33,7 @@ using DummyERC20_rewardToken as RewardToken;
         function getTotalSupply(address) external returns(uint256) envfree;
 
         //envfree functions
+        function getRewardsList() external returns (address[] memory) envfree;
         function getUserAccruedRewards(address, address ) external returns(uint256) envfree; 
         function getClaimer(address) external returns (address) envfree;
         function getTransferStrategy(address) external returns (address) envfree;

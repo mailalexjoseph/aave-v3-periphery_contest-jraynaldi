@@ -125,13 +125,18 @@ rule handleAction_integrity_user(
     assert userAccruedAfter != userAccruedBefore => oldUserIndex != newIndexCalc;
 }
 
-function claimRewardSetup(env e, env e1, address to, address reward, address asset) {
+function claimRewardSetup(env e, env e1,address user, address to, address reward, address asset) {
     require e1.msg.sender == AToken;
     require reward == RewardToken;
     require asset == AToken;
     require e.msg.sender == currentContract;
     require e.block.timestamp == e1.block.timestamp;
     require to != TransferStrategy;
+
+    uint256 userBalance = AToken.scaledBalanceOf(e, user);
+    uint256 totalSupply = AToken.scaledTotalSupply(e);
+    handleAction(e1, user, totalSupply, userBalance);
+
 }
 
 rule claimReward_integrity(
@@ -142,11 +147,7 @@ rule claimReward_integrity(
     address to,
     address reward
 ) {
-    claimRewardSetup(e,e1,to,reward,asset);
-
-    uint256 userBalance = AToken.scaledBalanceOf(e, e.msg.sender);
-    uint256 totalSupply = AToken.scaledTotalSupply(e);
-    handleAction(e1, e.msg.sender, totalSupply, userBalance);
+    claimRewardSetup(e,e1,e.msg.sender, to,reward,asset);
 
     uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
     mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
@@ -176,11 +177,7 @@ rule claimRewardOnBehalf(
     address to,
     address reward
 ) {
-    claimRewardSetup(e,e1,to,reward,asset);
-
-    uint256 userBalance = AToken.scaledBalanceOf(e, user);
-    uint256 totalSupply = AToken.scaledTotalSupply(e);
-    handleAction(e1, user, totalSupply, userBalance);
+    claimRewardSetup(e,e1,user, to,reward,asset);
 
     uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
     mathint userAccruedBefore = userAccrued[user][asset][reward];
@@ -210,11 +207,7 @@ rule claimRewardToSelf(
     uint256 amount,
     address reward
 ) {
-    claimRewardSetup(e,e1,e.msg.sender,reward,asset);
-
-    uint256 userBalance = AToken.scaledBalanceOf(e, e.msg.sender);
-    uint256 totalSupply = AToken.scaledTotalSupply(e);
-    handleAction(e1, e.msg.sender, totalSupply, userBalance);
+    claimRewardSetup(e,e1,e.msg.sender, e.msg.sender,reward,asset);
 
     uint256 rewardBalanceBefore = RewardToken.balanceOf(e, e.msg.sender);
     mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
@@ -242,31 +235,75 @@ rule claimAllReward(
     address to,
     address reward
 ) {
-    claimRewardSetup(e,e1,to,reward,asset);
+    claimRewardSetup(e,e1,e.msg.sender, to,reward,asset);
+
+    address[] rewards = getRewardsList();
+    require rewards[0] == reward;
+    require rewards.length == 1; 
+
+    uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
+    mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
+    require userAccruedBefore >= 0;
+
     claimAllReward(e, asset, to);
-    assert false;
+
+
+    mathint userAccruedAfter = userAccrued[e.msg.sender][asset][reward];
+    uint256 rewardBalanceAfter = RewardToken.balanceOf(e, to);
+
+    assert userAccruedAfter == 0;
+    assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
 
 rule claimAllRewardOnBehalf(
     env e,
     env e1,
     address asset,
+    address user,
     address to,
     address reward
 ) {
-    claimRewardSetup(e,e1,to,reward,asset);
-    claimAllRewardOnBehalf(e, asset, to);
-    assert false;
+    claimRewardSetup(e,e1,user, to,reward,asset);
+
+    address[] rewards = getRewardsList();
+    require rewards[0] == reward;
+    require rewards.length == 1; 
+
+    uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
+    mathint userAccruedBefore = userAccrued[user][asset][reward];
+    require userAccruedBefore >= 0;
+
+    claimAllRewardOnBehalf(e, asset,user, to);
+
+
+    mathint userAccruedAfter = userAccrued[user][asset][reward];
+    uint256 rewardBalanceAfter = RewardToken.balanceOf(e, to);
+
+    assert userAccruedAfter == 0 <=> currentContract == getClaimer(user);
+    assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
 
 rule claimAllRewardToSelf(
     env e,
     env e1,
     address asset,
-    address to,
     address reward
 ) {
-    claimRewardSetup(e,e1,to,reward,asset);
-    claimAllRewardToSelf(e, asset, to);
-    assert false;
+    claimRewardSetup(e,e1,e.msg.sender, e.msg.sender,reward,asset);
+
+    address[] rewards = getRewardsList();
+    require rewards[0] == reward;
+    require rewards.length == 1; 
+
+    uint256 rewardBalanceBefore = RewardToken.balanceOf(e, e.msg.sender);
+    mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
+    require userAccruedBefore >= 0;
+
+    claimAllRewardToSelf(e, asset);
+
+    mathint userAccruedAfter = userAccrued[e.msg.sender][asset][reward];
+    uint256 rewardBalanceAfter = RewardToken.balanceOf(e, e.msg.sender);
+
+    assert userAccruedAfter == 0;
+    assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
