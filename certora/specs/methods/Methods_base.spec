@@ -40,6 +40,7 @@ using DummyERC20_rewardToken as RewardToken;
         function getRewardOracle(address) external returns(address) envfree;
         function getAssetDecimals(address) external returns(uint8) envfree;
         function getRewardsByAsset(address) external returns(address[] memory) envfree;
+        function getDistributionEnd(address, address) external returns(uint256) envfree;
     }
 
 ///////////////// DEFINITIONS //////////////////////

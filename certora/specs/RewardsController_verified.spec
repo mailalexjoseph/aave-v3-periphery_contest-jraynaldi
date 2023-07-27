@@ -307,3 +307,14 @@ rule claimAllRewardToSelf(
     assert userAccruedAfter == 0;
     assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
+
+rule setDistributionEnd_integrity(
+    env e, 
+    address asset,
+    address reward,
+    uint32 newDistributionEnd
+) {
+    setDistributionEnd(e, asset, reward, newDistributionEnd);
+    assert getDistributionEnd(asset, reward) == assert_uint256(newDistributionEnd)
+        <=> e.msg.sender == EMISSION_MANAGER();
+}
