@@ -31,6 +31,7 @@ using DummyERC20_rewardToken as RewardToken;
         function isContract(address) external returns(bool) envfree;
         function getAvailableRewardsCount(address) external returns(uint128) envfree;
         function getTotalSupply(address) external returns(uint256) envfree;
+        function getEmissionPerSecond(address, address) external returns(uint256) envfree;
 
         //envfree functions
         function getRewardsList() external returns (address[] memory) envfree;
