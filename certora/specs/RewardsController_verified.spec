@@ -30,6 +30,7 @@ hook Sstore _assets[KEY address asset].rewards[KEY address reward].usersData[KEY
                     High Level Properties
 //////////////////////////////////////////////////////////////*/
 
+// solvency of reward, sumOfAllReward should greater than equal rewardAccrued of every single user
 rule sumOfAllRewardAccrued_GTE_singleReward(
     env e,
     method f, 
@@ -50,6 +51,26 @@ rule sumOfAllRewardAccrued_GTE_singleReward(
         require userAccruedBefore != userAccruedAfter;
     }
     assert sumOfAllRewardAccrued[asset][reward] >= userAccruedAfter;
+}
+
+// reward index cannot be decreased, otherwise user will experienced missing reward and protocol will insolvent
+// cause of multiple reward claim
+rule indexCannotDecrease(
+    env e, 
+    method f,
+    calldataarg args,
+    address asset,
+    address reward
+)  filtered {
+    f -> !f.isView && !harnessFunction(f)
+} {
+    uint256 indexBefore = getAssetRewardIndex(asset, reward);
+
+    f(e,args);
+
+    uint256 indexAfter = getAssetRewardIndex(asset, reward);
+
+    assert indexAfter >= indexBefore;
 }
 
 /*//////////////////////////////////////////////////////////////
