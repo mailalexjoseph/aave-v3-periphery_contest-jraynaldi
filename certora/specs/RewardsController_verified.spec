@@ -318,3 +318,34 @@ rule setDistributionEnd_integrity(
     assert getDistributionEnd(asset, reward) == assert_uint256(newDistributionEnd)
         <=> e.msg.sender == EMISSION_MANAGER();
 }
+
+rule getAssetIndex_integrity(
+    env e,
+    address asset, 
+    address reward
+) {
+    uint256 emissionPerSecond;
+    uint256 lastUpdateTimestamp;
+    uint256 assetIndex;
+    uint256 distributionEnd;
+    assetIndex, emissionPerSecond, lastUpdateTimestamp, distributionEnd = getRewardsData(asset, reward);
+
+    uint256 totalSupply = getTotalSupply(asset);
+    uint256 decimal = getAssetDecimals(asset);
+
+    uint256 oldIndex;
+    uint256 newIndex;
+    oldIndex, newIndex = getAssetIndex(e, asset, reward);
+
+    uint256 currentTimestamp = e.block.timestamp > distributionEnd ? distributionEnd : e.block.timestamp;
+
+    mathint firstTirm = (emissionPerSecond * (currentTimestamp - lastUpdateTimestamp) * 10 ^ decimal);
+
+    assert oldIndex == assetIndex;
+    assert oldIndex == newIndex 
+        <=> e.block.timestamp == lastUpdateTimestamp
+        || emissionPerSecond == 0
+        || lastUpdateTimestamp >= distributionEnd
+        || totalSupply == 0
+        || firstTirm < to_mathint(totalSupply);
+}
