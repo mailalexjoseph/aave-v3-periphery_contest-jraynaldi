@@ -45,5 +45,21 @@ using DummyERC20_rewardToken as RewardToken;
     }
 
 ///////////////// DEFINITIONS //////////////////////
+definition harnessFunction(method f) returns bool = 
+    f.selector == sig:configureAssetsSingle(RewardsDataTypes.RewardsConfigInput).selector
+    || f.selector == sig:claimReward(address,uint256,address,address).selector
+    || f.selector == sig:claimRewardOnBehalf(address, uint256, address, address, address).selector
+    || f.selector == sig:claimRewardToSelf(address, uint256, address).selector
+    || f.selector == sig:claimAllReward(address,address).selector
+    || f.selector == sig:claimAllRewardOnBehalf(address,address,address).selector
+    || f.selector == sig:claimAllRewardToSelf(address).selector;
+
+definition claimFunction(method f) returns bool =
+    f.selector == sig:claimAllRewards(address[],address).selector
+    || f.selector == sig:claimAllRewardsOnBehalf(address[],address,address).selector
+    || f.selector == sig:claimAllRewardsToSelf(address[]).selector
+    || f.selector == sig:claimRewards(address[],uint256,address,address).selector
+    || f.selector == sig:claimRewardsOnBehalf(address[],uint256,address,address,address).selector
+    || f.selector == sig:claimRewardsToSelf(address[],uint256,address).selector;
 
 ////////////////// FUNCTIONS //////////////////////

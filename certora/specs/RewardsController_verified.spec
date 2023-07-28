@@ -12,12 +12,44 @@ ghost mapping(address => mapping(address => mapping(address => mathint))) userAc
     init_state axiom forall address asset. forall address reward. forall address user. userAccrued[user][asset][reward] == 0;
 }
 
+ghost mapping(address => mapping(address => mathint)) sumOfAllRewardAccrued {
+    init_state axiom forall address asset. forall address reward. sumOfAllRewardAccrued[asset][reward] == 0;
+}
+
+
 hook Sload uint128 val _assets[KEY address asset].rewards[KEY address reward].usersData[KEY address user].accrued STORAGE{
     require userAccrued[user][asset][reward] == to_mathint(val);
 }
 
 hook Sstore _assets[KEY address asset].rewards[KEY address reward].usersData[KEY address user].accrued uint128 val (uint128 oldVal) STORAGE{
     userAccrued[user][asset][reward] = to_mathint(val);
+    sumOfAllRewardAccrued[asset][reward] = sumOfAllRewardAccrued[asset][reward] + val - oldVal;
+}
+
+/*//////////////////////////////////////////////////////////////
+                    High Level Properties
+//////////////////////////////////////////////////////////////*/
+
+rule sumOfAllRewardAccrued_GTE_singleReward(
+    env e,
+    method f, 
+    calldataarg args,
+    address user, 
+    address asset, 
+    address reward
+) filtered {
+    f -> !f.isView && !harnessFunction(f)
+} {
+    mathint userAccruedBefore =  userAccrued[user][asset][reward];
+    require sumOfAllRewardAccrued[asset][reward] >= userAccruedBefore;
+
+    f(e,args);
+
+    mathint userAccruedAfter =  userAccrued[user][asset][reward];
+    if claimFunction(f) {
+        require userAccruedBefore != userAccruedAfter;
+    }
+    assert sumOfAllRewardAccrued[asset][reward] >= userAccruedAfter;
 }
 
 /*//////////////////////////////////////////////////////////////
