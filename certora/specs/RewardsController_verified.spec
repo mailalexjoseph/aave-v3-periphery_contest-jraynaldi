@@ -73,6 +73,9 @@ rule indexCannotDecrease(
     assert indexAfter >= indexBefore;
 }
 
+invariant userIndex_LTE_globalIndex(address asset, address reward, address user)
+    getAssetRewardIndex(asset, reward) >= getUserAssetIndex(user, asset, reward);
+
 /*//////////////////////////////////////////////////////////////
                             Unit Test
 //////////////////////////////////////////////////////////////*/
