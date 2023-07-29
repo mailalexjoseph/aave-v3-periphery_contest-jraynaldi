@@ -73,8 +73,30 @@ rule indexCannotDecrease(
     assert indexAfter >= indexBefore;
 }
 
+// user index should always lower than global index
 invariant userIndex_LTE_globalIndex(address asset, address reward, address user)
     getAssetRewardIndex(asset, reward) >= getUserAssetIndex(user, asset, reward);
+
+// user index cannot decreased same as global index
+rule userIndexCannotDecrease(
+    env e, 
+    method f,
+    calldataarg args,
+    address user,
+    address asset,
+    address reward
+)  filtered {
+    f -> !f.isView && !harnessFunction(f)
+} {
+    requireInvariant userIndex_LTE_globalIndex(asset,reward,user);
+    uint256 indexBefore = getUserAssetIndex(user, asset, reward);
+
+    f(e,args);
+
+    uint256 indexAfter = getUserAssetIndex(user, asset, reward);
+
+    assert indexAfter >= indexBefore;
+}
 
 /*//////////////////////////////////////////////////////////////
                             Unit Test
