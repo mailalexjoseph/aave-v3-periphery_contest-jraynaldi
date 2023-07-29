@@ -119,6 +119,56 @@ rule whoDecreaseRewardsAccrued(
         && (claimFunction(f));
 }
 
+//if certain function called it should update the index
+rule claimShouldUpdate(
+    env e,
+    method f,
+    calldataarg args,
+    address user,
+    address to,
+    uint256 amount,
+    address[] assets, 
+    address reward
+) filtered {
+    f -> !f.isView && !harnessFunction(f)
+} {
+    require assets.length == 1;
+    require amount != 0;
+    uint256 oldIndex;
+    uint256 newIndex;
+    oldIndex, newIndex = getAssetIndex(e, assets[0], reward);
+
+    address[] rewardsList = getRewardsList();
+    require rewardsList[0] == reward;
+    require rewardsList.length == 1; 
+
+    address[] assetRewards = getRewardsByAsset(assets[0]);
+    require assetRewards[0] == reward;
+    require assetRewards.length == 1;
+
+    uint256 indexBefore = getAssetRewardIndex(assets[0], reward);
+
+    if f.selector == sig:claimAllRewards(address[],address).selector {
+        claimAllRewards(e, assets,to);
+    } else if f.selector == sig:claimAllRewardsOnBehalf(address[],address,address).selector {
+        claimAllRewardsOnBehalf(e,assets,user,to);
+    } else if f.selector == sig:claimAllRewardsToSelf(address[]).selector {
+        claimAllRewardsToSelf(e,assets);
+    } else if f.selector == sig:claimRewards(address[],uint256,address,address).selector {
+        claimRewards(e, assets, amount, to,  reward);
+    } else if f.selector == sig:claimRewardsOnBehalf(address[],uint256,address,address,address).selector {
+        claimRewardsOnBehalf(e, assets, amount, user, to, reward);
+    } else if f.selector == sig:claimRewardsToSelf(address[],uint256,address).selector {
+        claimRewardsToSelf(e, assets, amount, reward);
+    } else { 
+        f(e,args);
+    }
+
+    uint256 indexAfter = getAssetRewardIndex(assets[0], reward);
+    assert claimFunction(f) => (indexAfter != indexBefore 
+        <=> oldIndex != newIndex);
+}
+
 /*//////////////////////////////////////////////////////////////
                             Unit Test
 //////////////////////////////////////////////////////////////*/
