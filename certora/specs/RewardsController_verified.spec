@@ -98,6 +98,27 @@ rule userIndexCannotDecrease(
     assert indexAfter >= indexBefore;
 }
 
+// user reward accrued only decreased via several function and only by that user itself or the claimer
+rule whoDecreaseRewardsAccrued(
+    env e,
+    method f,
+    calldataarg args,
+    address user, 
+    address asset,
+    address reward
+) filtered {
+    f -> !f.isView && !harnessFunction(f)
+} {
+    mathint userAccruedBefore = userAccrued[user][asset][reward];
+    f(e, args);
+    mathint userAccruedAfter = userAccrued[user][asset][reward];
+
+    assert userAccruedAfter < userAccruedBefore 
+        => (e.msg.sender == user
+        || e.msg.sender == getClaimer(user))
+        && (claimFunction(f));
+}
+
 /*//////////////////////////////////////////////////////////////
                             Unit Test
 //////////////////////////////////////////////////////////////*/
