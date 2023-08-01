@@ -75,7 +75,10 @@ rule indexCannotDecrease(
 
 // user index should always lower than global index
 invariant userIndex_LTE_globalIndex(address asset, address reward, address user)
-    getAssetRewardIndex(asset, reward) >= getUserAssetIndex(user, asset, reward);
+    getAssetRewardIndex(asset, reward) >= getUserAssetIndex(user, asset, reward)
+    filtered {
+        f -> !f.isView && !harnessFunction(f)
+    } 
 
 // user index cannot decreased same as global index
 rule userIndexCannotDecrease(
@@ -167,6 +170,37 @@ rule claimShouldUpdate(
     uint256 indexAfter = getAssetRewardIndex(assets[0], reward);
     assert claimFunction(f) => (indexAfter != indexBefore 
         <=> oldIndex != newIndex);
+}
+
+// cannot transfer reward to address 0 
+invariant addressZeroNoReward()
+    RewardToken.balanceOf(0) == 0
+    filtered {
+        f -> !f.isView && !harnessFunction(f)
+    } 
+    {
+        preserved with (env e) {
+            require e.msg.sender != 0;
+        }
+    }
+
+// cannot claim rewards from address 0 
+rule addressZeroNoClaim( 
+    env e, 
+    method f, 
+    calldataarg args, 
+    address asset, 
+    address reward
+) filtered {
+        f -> !f.isView && !harnessFunction(f)
+} {
+    require e.msg.sender != 0;
+    mathint rewardAccruedBefore = userAccrued[0][asset][reward];
+
+    f(e,args);
+
+    mathint rewardAccruedAfter = userAccrued[0][asset][reward];
+    assert rewardAccruedAfter >= rewardAccruedBefore;
 }
 
 /*//////////////////////////////////////////////////////////////
