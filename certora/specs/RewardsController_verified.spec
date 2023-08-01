@@ -1,5 +1,10 @@
 import "methods/Methods_base.spec";
 using TransferStrategyHarness as TransferStrategy;
+
+// TODO 
+// getUserReward Connection
+// complete configure asset
+
 ///////////////// Properties ///////////////////////
 /** Properties in consideration
 * user reward index should never decrease alongside with reward index all over the contract
