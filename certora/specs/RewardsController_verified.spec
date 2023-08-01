@@ -219,17 +219,39 @@ rule configureAssetsSingle(
     RewardsDataTypes.RewardsConfigInput config
 ) {
     address reward = config.reward;
+    uint128 _availableRewardsCount = getAvailableRewardsCount(config.asset);
+    bool isRewardEnabledBefore = isRewardEnabled(reward);
+    uint256 _decimals = getAssetDecimals();
+    uint256 _index;
+    uint256 _emissionPerSecond;
+    uint256 _lastUpdateTimestamp;
+    uint256 _distributionEnd;
+    _index, _emissionPerSecond, _lastUpdateTimestamp, _distributionEnd = getRewardsData(config.asset, config.reward);
+    
     configureAssetsSingle(e,config);
+
+    address[] rewardList = getRewardsList();
+    address[] assetsList = getAssetsList();
+    uint256 decimals_ = getAssetDecimals();
+    uint128 availableRewardsCount_ = getAvailableRewardsCount(config.asset);
+    address[] rewardsByAsset = getRewardsByAsset(config.asset);
     uint256 index;
     uint256 emissionPerSecond;
     uint256 lastUpdateTimestamp;
     uint256 distributionEnd;
     index, emissionPerSecond, lastUpdateTimestamp, distributionEnd = getRewardsData(config.asset, config.reward);
+    
     assert getTransferStrategy(reward) == config.transferStrategy;
     assert getRewardOracle(reward) == config.rewardOracle;
     assert to_mathint(lastUpdateTimestamp) == to_mathint(e.block.timestamp);
     assert to_mathint(emissionPerSecond) == to_mathint(config.emissionPerSecond);
     assert to_mathint(distributionEnd) == to_mathint(config.distributionEnd);
+    assert isRewardEnabled(reward);
+    assert !isRewardEnabledBefore => rewardList[rewardList.length - 1] == reward;
+    assert _decimals == 0 => assetsList[assetsList.length - 1 ] == config.asset;
+    assert _lastUpdateTimestamp == 0 
+        <=> availableRewardsCount_ == _availableRewardsCount + 1 
+        && rewardsByAsset[_availableRewardsCount] == reward;
 }
 
 rule setTransferStrategy_integrity(
