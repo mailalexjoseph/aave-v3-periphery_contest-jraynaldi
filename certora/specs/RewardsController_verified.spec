@@ -346,7 +346,6 @@ function claimRewardSetup(env e, env e1,address user, address to, address reward
     require e1.msg.sender == AToken;
     require reward == RewardToken;
     require asset == AToken;
-    require e.msg.sender == currentContract;
     require e.block.timestamp == e1.block.timestamp;
     require to != TransferStrategy;
 
@@ -371,7 +370,11 @@ rule claimReward_integrity(
     mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
     require userAccruedBefore >= 0;
 
-    claimReward(e, asset, amount, to, reward);
+    address[] assets;
+    require assets[0] == asset;
+    require assets.length == 1;
+
+    claimRewards(e, assets, amount, to, reward);
 
     mathint userAccruedAfter = userAccrued[e.msg.sender][asset][reward];
     uint256 rewardBalanceAfter = RewardToken.balanceOf(e, to);
@@ -403,7 +406,11 @@ rule claimRewardOnBehalf(
     mathint userAccruedBefore = userAccrued[user][asset][reward];
     require userAccruedBefore >= 0;
 
-    claimRewardOnBehalf(e, asset, amount, user, to, reward);
+    address[] assets;
+    require assets[0] == asset;
+    require assets.length == 1;
+
+    claimRewardsOnBehalf(e, assets, amount, user, to, reward);
 
     mathint userAccruedAfter = userAccrued[user][asset][reward];
     uint256 rewardBalanceAfter = RewardToken.balanceOf(e, to);
@@ -434,7 +441,11 @@ rule claimRewardToSelf(
     mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
     require userAccruedBefore >= 0;
 
-    claimRewardToSelf(e, asset, amount,  reward);
+    address[] assets;
+    require assets[0] == asset;
+    require assets.length == 1;
+
+    claimRewardsToSelf(e, assets, amount,  reward);
 
     mathint userAccruedAfter = userAccrued[e.msg.sender][asset][reward];
     uint256 rewardBalanceAfter = RewardToken.balanceOf(e, e.msg.sender);
@@ -463,11 +474,15 @@ rule claimAllReward(
     require rewards[0] == reward;
     require rewards.length == 1; 
 
+    address[] assets;
+    require assets[0] == asset;
+    require assets.length == 1;
+
     uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
     mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
     require userAccruedBefore >= 0;
 
-    claimAllReward(e, asset, to);
+    claimAllRewards(e, assets, to);
 
 
     mathint userAccruedAfter = userAccrued[e.msg.sender][asset][reward];
@@ -493,11 +508,17 @@ rule claimAllRewardOnBehalf(
     require rewards[0] == reward;
     require rewards.length == 1; 
 
+
+    address[] assets;
+    require assets[0] == asset;
+    require assets.length == 1;
+
+
     uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
     mathint userAccruedBefore = userAccrued[user][asset][reward];
     require userAccruedBefore >= 0;
 
-    claimAllRewardOnBehalf(e, asset,user, to);
+    claimAllRewardsOnBehalf(e, assets,user, to);
 
 
     mathint userAccruedAfter = userAccrued[user][asset][reward];
@@ -538,7 +559,7 @@ rule getUserRewardsConnection(
 
     uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
 
-    claimAllRewardOnBehalf(e, asset,user, to);
+    claimAllRewardsOnBehalf(e, assets,user, to);
 
     uint256 rewardBalanceAfter = RewardToken.balanceOf(e, to);
     assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userRewards;
@@ -593,6 +614,8 @@ rule getAssetIndex_integrity(
     uint256 assetIndex;
     uint256 distributionEnd;
     assetIndex, emissionPerSecond, lastUpdateTimestamp, distributionEnd = getRewardsData(asset, reward);
+    require lastUpdateTimestamp <= e.block.timestamp;
+    require lastUpdateTimestamp <= distributionEnd;
 
     uint256 totalSupply = getTotalSupply(asset);
     uint256 decimal = getAssetDecimals(asset);
@@ -604,6 +627,7 @@ rule getAssetIndex_integrity(
     uint256 currentTimestamp = e.block.timestamp > distributionEnd ? distributionEnd : e.block.timestamp;
 
     mathint firstTirm = (emissionPerSecond * (currentTimestamp - lastUpdateTimestamp) * 10 ^ decimal);
+    mathint changes = totalSupply == 0 ? 0 : firstTirm / totalSupply;
 
     assert oldIndex == assetIndex;
     assert oldIndex == newIndex 
@@ -612,4 +636,5 @@ rule getAssetIndex_integrity(
         || lastUpdateTimestamp >= distributionEnd
         || totalSupply == 0
         || firstTirm < to_mathint(totalSupply);
+    assert to_mathint(newIndex) == oldIndex + (changes);
 }
