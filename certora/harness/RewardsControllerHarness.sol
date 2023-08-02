@@ -18,6 +18,14 @@ contract RewardsControllerHarness is RewardsController {
         return _assets[asset].rewards[reward].emissionPerSecond;
     }
 
+    function isRewardEnabled(address reward) external view returns(bool){
+        return _isRewardEnabled[reward];
+    }
+
+    function getAssetsList() external view returns(address[] memory){
+        return _assetsList;
+    }
+
     function configureAssetsSingle(RewardsDataTypes.RewardsConfigInput memory config) external {
         RewardsDataTypes.RewardsConfigInput[] memory inputs = new RewardsDataTypes.RewardsConfigInput[](1);
         inputs[0] = config;
