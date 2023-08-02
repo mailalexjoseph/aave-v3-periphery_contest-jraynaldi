@@ -496,6 +496,42 @@ rule claimAllRewardOnBehalf(
     assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
 
+rule getUserRewardsConnection(
+    env e,
+    env e1, 
+    address asset,
+    address user,
+    address to,
+    address reward
+) {
+    require reward == RewardToken;
+    require asset == AToken;
+    require to != TransferStrategy;
+
+    address[] rewards = getRewardsList();
+    require rewards[0] == reward;
+    require rewards.length == 1; 
+
+    address[] assetRewards = getRewardsByAsset(asset);
+    require assetRewards[0] == reward;
+    require assetRewards.length == 1; 
+
+    require getAvailableRewardsCount(asset) == 1;
+
+    address[] assets;
+    require assets[0] == asset;
+    require assets.length == 1;
+
+    uint256 userRewards = getUserRewards(e, assets, user, reward);
+
+    uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
+
+    claimAllRewardOnBehalf(e, asset,user, to);
+
+    uint256 rewardBalanceAfter = RewardToken.balanceOf(e, to);
+    assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userRewards;
+}
+
 rule claimAllRewardToSelf(
     env e,
     env e1,
