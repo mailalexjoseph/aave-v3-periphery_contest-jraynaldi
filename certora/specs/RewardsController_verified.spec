@@ -570,6 +570,7 @@ rule claimAllRewardToSelf(
     assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
 
+// integrity of setDistributionEnd to setting distributionEnd of a reward
 rule setDistributionEnd_integrity(
     env e, 
     address asset,
@@ -581,6 +582,7 @@ rule setDistributionEnd_integrity(
         <=> e.msg.sender == EMISSION_MANAGER();
 }
 
+// integrity of getAssetIndex to show the real value of asset index before and after update
 rule getAssetIndex_integrity(
     env e,
     address asset, 
