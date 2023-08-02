@@ -207,6 +207,33 @@ rule addressZeroNoClaim(
     assert rewardAccruedAfter >= rewardAccruedBefore;
 }
 
+rule lastUpdateTimestamp_LTE_blockTimestamp_distributionEnd(
+    env e,
+    method f,
+    calldataarg args,
+    address asset,
+    address reward
+) filtered {
+    f-> !f.isView && !harnessFunction(f)
+} {
+    uint256 _lastUpdateTimestamp;
+    uint256 _distributionEnd;
+
+    _,_, _lastUpdateTimestamp, _distributionEnd = getRewardsData(asset, reward);
+
+    require _lastUpdateTimestamp <= _distributionEnd;
+    require _lastUpdateTimestamp <= e.block.timestamp;
+
+    f(e, args);
+
+    uint256 lastUpdateTimestamp_;
+    uint256 distributionEnd_;
+
+    _,_, lastUpdateTimestamp_, distributionEnd_ = getRewardsData(asset, reward);
+
+    assert _lastUpdateTimestamp <= _distributionEnd;
+    assert _lastUpdateTimestamp <= e.block.timestamp;
+}
 /*//////////////////////////////////////////////////////////////
                             Unit Test
 //////////////////////////////////////////////////////////////*/
@@ -420,10 +447,10 @@ rule claimRewardOnBehalf(
     assert userAccruedAfter == 0 <=> userAccruedBefore <= to_mathint(amount);
     if (to_mathint(amount) < userAccruedBefore) {
         assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + amount 
-            <=> currentContract == getClaimer(user);
+            <=> e.msg.sender == getClaimer(user);
     } else {
         assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore
-            <=> currentContract == getClaimer(user);
+            <=> e.msg.sender == getClaimer(user);
     }
 }
 
@@ -524,7 +551,7 @@ rule claimAllRewardOnBehalf(
     mathint userAccruedAfter = userAccrued[user][asset][reward];
     uint256 rewardBalanceAfter = RewardToken.balanceOf(e, to);
 
-    assert userAccruedAfter == 0 <=> currentContract == getClaimer(user);
+    assert userAccruedAfter == 0 <=> e.msg.sender == getClaimer(user);
     assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
 
@@ -582,7 +609,11 @@ rule claimAllRewardToSelf(
     mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
     require userAccruedBefore >= 0;
 
-    claimAllRewardToSelf(e, asset);
+    address[] assets;
+    require assets[0] == asset;
+    require assets.length == 1;
+
+    claimAllRewardsToSelf(e, assets);
 
     mathint userAccruedAfter = userAccrued[e.msg.sender][asset][reward];
     uint256 rewardBalanceAfter = RewardToken.balanceOf(e, e.msg.sender);
