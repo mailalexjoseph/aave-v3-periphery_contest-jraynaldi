@@ -212,16 +212,17 @@ rule addressZeroNoClaim(
                             Unit Test
 //////////////////////////////////////////////////////////////*/
 
-//TODO not completed 
+//TODO not completed Update Reward Data needed
 rule configureAssetsSingle(
     env e,
     env e1,
     RewardsDataTypes.RewardsConfigInput config
 ) {
     address reward = config.reward;
+    address asset = config.asset;
     uint128 _availableRewardsCount = getAvailableRewardsCount(config.asset);
     bool isRewardEnabledBefore = isRewardEnabled(reward);
-    uint256 _decimals = getAssetDecimals();
+    uint256 _decimals = getAssetDecimals(asset);
     uint256 _index;
     uint256 _emissionPerSecond;
     uint256 _lastUpdateTimestamp;
@@ -232,7 +233,9 @@ rule configureAssetsSingle(
 
     address[] rewardList = getRewardsList();
     address[] assetsList = getAssetsList();
-    uint256 decimals_ = getAssetDecimals();
+    require assetsList.length > 0;
+    require rewardList.length > 0;
+    uint256 decimals_ = getAssetDecimals(asset);
     uint128 availableRewardsCount_ = getAvailableRewardsCount(config.asset);
     address[] rewardsByAsset = getRewardsByAsset(config.asset);
     uint256 index;
@@ -247,10 +250,10 @@ rule configureAssetsSingle(
     assert to_mathint(emissionPerSecond) == to_mathint(config.emissionPerSecond);
     assert to_mathint(distributionEnd) == to_mathint(config.distributionEnd);
     assert isRewardEnabled(reward);
-    assert !isRewardEnabledBefore => rewardList[rewardList.length - 1] == reward;
-    assert _decimals == 0 => assetsList[assetsList.length - 1 ] == config.asset;
+    assert !isRewardEnabledBefore => rewardList[assert_uint256(rewardList.length - 1)] == reward;
+    assert _decimals == 0 => assetsList[assert_uint256(assetsList.length - 1)] == config.asset;
     assert _lastUpdateTimestamp == 0 
-        <=> availableRewardsCount_ == _availableRewardsCount + 1 
+        <=> to_mathint(availableRewardsCount_) == _availableRewardsCount + 1 
         && rewardsByAsset[_availableRewardsCount] == reward;
 }
 
