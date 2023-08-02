@@ -2,7 +2,6 @@ import "methods/Methods_base.spec";
 using TransferStrategyHarness as TransferStrategy;
 
 // TODO 
-// getUserReward Connection
 // complete configure asset
 
 ///////////////// Properties ///////////////////////
@@ -257,6 +256,7 @@ rule configureAssetsSingle(
         && rewardsByAsset[_availableRewardsCount] == reward;
 }
 
+// integrity of setTransferStrategy to set tansferStrategy address
 rule setTransferStrategy_integrity(
     env e,
     address reward,
@@ -269,6 +269,7 @@ rule setTransferStrategy_integrity(
         && transferStrategy != 0;
 }
 
+// integrity of setRewardOracle to set rewardOracle address
 rule setRewardOracle_integrity(
     env e,
     address reward,
@@ -281,6 +282,7 @@ rule setRewardOracle_integrity(
         && latestAnswer > 0 ;
 }
 
+// integrity handleAction to msg.sender update their reward data to global rewards
 rule handleAction_integrity_global(
     env e,
     address user, 
@@ -310,6 +312,7 @@ rule handleAction_integrity_global(
     assert lastUpdateTimestamp == e.block.timestamp;
 }
 
+// integrity of handleAction to msg.sender update their data on user rewards
 rule handleAction_integrity_user(
     env e,
     address user, 
@@ -338,6 +341,7 @@ rule handleAction_integrity_user(
     assert userAccruedAfter != userAccruedBefore => oldUserIndex != newIndexCalc;
 }
 
+// setup helper to claimReward function
 function claimRewardSetup(env e, env e1,address user, address to, address reward, address asset) {
     require e1.msg.sender == AToken;
     require reward == RewardToken;
@@ -352,6 +356,7 @@ function claimRewardSetup(env e, env e1,address user, address to, address reward
 
 }
 
+// integrity of claimReward to claim porpotion reward of msg.sender than send to `to` address
 rule claimReward_integrity(
     env e,
     env e1,
@@ -381,6 +386,8 @@ rule claimReward_integrity(
     }
 }
 
+// integrity of claimRewardOnBehalf to claim porpotion reward of a user than 
+// send to `to` address by another user that have permission
 rule claimRewardOnBehalf(
     env e,
     env e1,
@@ -413,6 +420,7 @@ rule claimRewardOnBehalf(
     }
 }
 
+// integrity of claimRewardsToSelf to claim porpotion reward of msg.sender than send to self
 rule claimRewardToSelf(
     env e,
     env e1,
@@ -441,6 +449,7 @@ rule claimRewardToSelf(
     }
 }
 
+// integrity of claimAllRewards to claim all reward of msg.sender than send to `to` address
 rule claimAllReward(
     env e,
     env e1,
@@ -468,6 +477,8 @@ rule claimAllReward(
     assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
 
+// integrity of claimAllRewardsOnBehalf to claim porpotion reward of user that 
+// send to `to` address by other user that have permission
 rule claimAllRewardOnBehalf(
     env e,
     env e1,
@@ -496,6 +507,7 @@ rule claimAllRewardOnBehalf(
     assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
 
+// getUserRewards should sync with other rewards getter. 
 rule getUserRewardsConnection(
     env e,
     env e1, 
@@ -532,6 +544,7 @@ rule getUserRewardsConnection(
     assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userRewards;
 }
 
+// integrity of claimAllRewardsToSelf to claim porpotion reward of msg.sender send to self
 rule claimAllRewardToSelf(
     env e,
     env e1,
