@@ -121,4 +121,26 @@ contract RewardsControllerHarness is RewardsController {
         assets[0] = asset;
         this.claimAllRewardsToSelf(assets);
     }
+
+    function updateRewardData(
+        address asset,
+        address reward
+    ) external returns (uint256 , bool) {
+        RewardsDataTypes.RewardData storage rewardData = _assets[asset].rewards[reward];
+        (uint256 nextIndex, bool updated )= _updateRewardData( rewardData, IScaledBalanceToken(asset).scaledTotalSupply(), 10 ** _assets[asset].decimals);
+        return (nextIndex, updated);
+    }
+
+    function updateUserData(
+        address user,
+        address asset,
+        address reward
+    ) external returns (uint256, bool) {
+        RewardsDataTypes.RewardData storage rewardData = _assets[asset].rewards[reward];
+        (uint256 balance, uint256 totalSupply) = IScaledBalanceToken(
+                asset
+            ).getScaledUserBalanceAndSupply(user);
+        (uint256 nextIndex, ) = _updateRewardData( rewardData, IScaledBalanceToken(asset).scaledTotalSupply(), 10 ** _assets[asset].decimals);
+        return _updateUserData(rewardData, user, balance, nextIndex, 10 ** _assets[asset].decimals);
+    }
 }
