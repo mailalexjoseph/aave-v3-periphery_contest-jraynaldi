@@ -254,6 +254,8 @@ rule configureAssetsSingle(
     uint256 _lastUpdateTimestamp;
     uint256 _distributionEnd;
     _index, _emissionPerSecond, _lastUpdateTimestamp, _distributionEnd = getRewardsData(config.asset, config.reward);
+    uint256 newIndex;
+    _, newIndex = getAssetIndex(e, asset, reward);
     
     configureAssetsSingle(e,config);
 
@@ -269,12 +271,14 @@ rule configureAssetsSingle(
     uint256 lastUpdateTimestamp;
     uint256 distributionEnd;
     index, emissionPerSecond, lastUpdateTimestamp, distributionEnd = getRewardsData(config.asset, config.reward);
-    
+    require _decimals == decimals_ || _decimals == 0;
+
     assert getTransferStrategy(reward) == config.transferStrategy;
     assert getRewardOracle(reward) == config.rewardOracle;
     assert to_mathint(lastUpdateTimestamp) == to_mathint(e.block.timestamp);
     assert to_mathint(emissionPerSecond) == to_mathint(config.emissionPerSecond);
     assert to_mathint(distributionEnd) == to_mathint(config.distributionEnd);
+    assert _decimals != 0 => index == newIndex;
     assert isRewardEnabled(reward);
     assert !isRewardEnabledBefore => rewardList[assert_uint256(rewardList.length - 1)] == reward;
     assert _decimals == 0 => assetsList[assert_uint256(assetsList.length - 1)] == config.asset;
