@@ -8,7 +8,7 @@ do
     for conf in certora/conf/*_verified.conf
     do
         echo "Running $conf"
-        certoraRun $conf
+        certoraRun $conf --send_only --msg "verify $f"
     done
     echo "Reverting $f"
     git apply -R $f
