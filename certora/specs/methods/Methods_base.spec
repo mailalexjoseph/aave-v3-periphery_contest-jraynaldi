@@ -58,6 +58,8 @@ definition harnessFunction(method f) returns bool =
     || f.selector == sig:claimAllReward(address,address).selector
     || f.selector == sig:claimAllRewardOnBehalf(address,address,address).selector
     || f.selector == sig:claimAllRewardToSelf(address).selector;
+    || f.selector == sig:updateUserData(address,address,address).selector;
+    || f.selector == sig:updateRewardData(address,address).selector;
 
 definition claimFunction(method f) returns bool =
     f.selector == sig:claimAllRewards(address[],address).selector

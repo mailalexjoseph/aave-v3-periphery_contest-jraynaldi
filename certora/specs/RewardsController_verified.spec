@@ -3,6 +3,9 @@ using TransferStrategyHarness as TransferStrategy;
 
 // TODO 
 // complete configure asset
+// bug11 integrity getUserAccruedRewards
+// bug13 getAllUserRewards connection
+// bug14 getAllUserRewards connection
 
 ///////////////// Properties ///////////////////////
 /** Properties in consideration
@@ -672,4 +675,40 @@ rule getAssetIndex_integrity(
         || totalSupply == 0
         || firstTirm < to_mathint(totalSupply);
     assert to_mathint(newIndex) == oldIndex + (changes);
+}
+
+rule updatingShouldEmitEvent_global(
+    env e, 
+    address asset, 
+    address reward
+) {
+    uint256 oldIndex = getAssetRewardIndex(asset, reward);
+
+    uint256 index;
+    bool updated;
+
+    index, updated = updateRewardData(e, asset, reward);
+
+    assert index != oldIndex <=> updated;
+
+}
+
+rule updatingShouldEmitEvent_user(
+    env e, 
+    address user,
+    address asset, 
+    address reward
+) {
+    uint256 oldIndex = getUserAssetIndex(user, asset, reward);
+
+    uint256 accrued;
+    bool updated;
+
+    accrued, updated = updateUserData(e, user, asset, reward);
+
+
+    uint256 newIndex = getUserAssetIndex(user, asset, reward);
+
+    assert newIndex != oldIndex <=> updated;
+
 }
