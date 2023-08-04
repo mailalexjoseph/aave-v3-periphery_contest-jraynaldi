@@ -68,7 +68,57 @@ rule claimAllRewardOnBehalf_MultiReward(
     assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
 
+//TODO timeouted
+rule getAllUserRewardsConnection (
+    env e,
+    env e1,
+    address asset,
+    address user,
+    address to
+) {
+    require to != TransferStrategyMulti;
+    require asset == 111;
+    require user == 333;
+    require to == 444;
 
-// rule getAllUserRewardsConnection (
+    uint256 numAvailableReward = getAvailableRewardsCount(asset);
+    require numAvailableReward == 2;
 
-// )
+    address[] assetsRewards = getRewardsByAsset(asset);
+    require assetsRewards.length == 2;
+
+    address[] rewards = getRewardsList();
+    require rewards.length == 2; 
+
+    require assetsRewards[0] == rewards[0];
+    require assetsRewards[1] == rewards[1];
+    require rewards[0] == RewardToken;
+    require rewards[1] == RewardTokenB;
+
+    uint256[] unclaimedAmounts;
+
+    address[] assets;
+    require assets[0] == asset;
+    require assets.length == 1;
+
+    _, unclaimedAmounts = getAllUserRewards(e, assets, user);
+    require unclaimedAmounts.length == 2;
+
+    // uint256 rewardBalanceBefore = RewardTokenB.balanceOf(e, to);
+
+    // claimAllRewardsOnBehalf(e, assets,user, to);
+
+    // uint256 rewardBalanceAfter = RewardTokenB.balanceOf(e, to);
+
+    // assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + unclaimedAmounts[1];
+
+    require e1.msg.sender == AToken;
+    require asset == AToken;
+    require e.block.timestamp == e1.block.timestamp;
+
+    uint256 userBalance = AToken.scaledBalanceOf(e, user);
+    uint256 totalSupply = AToken.scaledTotalSupply(e);
+    handleAction(e1, user, totalSupply, userBalance);
+
+    assert to_mathint(unclaimedAmounts[1]) == userAccrued[user][asset][rewards[1]];
+}
