@@ -13,27 +13,6 @@ using TransferStrategyHarness as TransferStrategy;
 *
 */
 /*//////////////////////////////////////////////////////////////
-                                MISC
-//////////////////////////////////////////////////////////////*/
-ghost mapping(address => mapping(address => mapping(address => mathint))) userAccrued {
-    init_state axiom forall address asset. forall address reward. forall address user. userAccrued[user][asset][reward] == 0;
-}
-
-ghost mapping(address => mapping(address => mathint)) sumOfAllRewardAccrued {
-    init_state axiom forall address asset. forall address reward. sumOfAllRewardAccrued[asset][reward] == 0;
-}
-
-
-hook Sload uint128 val _assets[KEY address asset].rewards[KEY address reward].usersData[KEY address user].accrued STORAGE{
-    require userAccrued[user][asset][reward] == to_mathint(val);
-}
-
-hook Sstore _assets[KEY address asset].rewards[KEY address reward].usersData[KEY address user].accrued uint128 val (uint128 oldVal) STORAGE{
-    userAccrued[user][asset][reward] = to_mathint(val);
-    sumOfAllRewardAccrued[asset][reward] = sumOfAllRewardAccrued[asset][reward] + val - oldVal;
-}
-
-/*//////////////////////////////////////////////////////////////
                     High Level Properties
 //////////////////////////////////////////////////////////////*/
 
@@ -375,20 +354,6 @@ rule handleAction_integrity_user(
     assert userAccruedAfter != userAccruedBefore => oldUserIndex != newIndexCalc;
 }
 
-// setup helper to claimReward function
-function claimRewardSetup(env e, env e1,address user, address to, address reward, address asset) {
-    require e1.msg.sender == AToken;
-    require reward == RewardToken;
-    require asset == AToken;
-    require e.block.timestamp == e1.block.timestamp;
-    require to != TransferStrategy;
-
-    uint256 userBalance = AToken.scaledBalanceOf(e, user);
-    uint256 totalSupply = AToken.scaledTotalSupply(e);
-    handleAction(e1, user, totalSupply, userBalance);
-
-}
-
 // integrity of claimReward to claim porpotion reward of msg.sender than send to `to` address
 rule claimReward_integrity(
     env e,
@@ -398,7 +363,9 @@ rule claimReward_integrity(
     address to,
     address reward
 ) {
-    claimRewardSetup(e,e1,e.msg.sender, to,reward,asset);
+    claimRewardSetup(e,e1,e.msg.sender, to,asset);
+
+    require to != TransferStrategy;
 
     uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
     mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
@@ -434,7 +401,9 @@ rule claimRewardOnBehalf(
     address to,
     address reward
 ) {
-    claimRewardSetup(e,e1,user, to,reward,asset);
+    claimRewardSetup(e,e1,user, to,asset);
+
+    require to != TransferStrategy;
 
     uint256 rewardBalanceBefore = RewardToken.balanceOf(e, to);
     mathint userAccruedBefore = userAccrued[user][asset][reward];
@@ -469,7 +438,9 @@ rule claimRewardToSelf(
     uint256 amount,
     address reward
 ) {
-    claimRewardSetup(e,e1,e.msg.sender, e.msg.sender,reward,asset);
+    claimRewardSetup(e,e1,e.msg.sender, e.msg.sender,asset);
+
+    require e.msg.sender != TransferStrategy;
 
     uint256 rewardBalanceBefore = RewardToken.balanceOf(e, e.msg.sender);
     mathint userAccruedBefore = userAccrued[e.msg.sender][asset][reward];
@@ -502,7 +473,9 @@ rule claimAllReward(
     address to,
     address reward
 ) {
-    claimRewardSetup(e,e1,e.msg.sender, to,reward,asset);
+    claimRewardSetup(e,e1,e.msg.sender, to, asset);
+
+    require to != TransferStrategy;
 
     address[] rewards = getRewardsList();
     require rewards[0] == reward;
@@ -536,7 +509,9 @@ rule claimAllRewardOnBehalf(
     address to,
     address reward
 ) {
-    claimRewardSetup(e,e1,user, to,reward,asset);
+    claimRewardSetup(e,e1,user, to,asset);
+
+    require to != TransferStrategy;
 
     address[] rewards = getRewardsList();
     require rewards[0] == reward;
@@ -606,7 +581,9 @@ rule claimAllRewardToSelf(
     address asset,
     address reward
 ) {
-    claimRewardSetup(e,e1,e.msg.sender, e.msg.sender,reward,asset);
+    claimRewardSetup(e,e1,e.msg.sender, e.msg.sender,asset);
+
+    require e.msg.sender != TransferStrategy;
 
     address[] rewards = getRewardsList();
     require rewards[0] == reward;

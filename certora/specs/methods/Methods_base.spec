@@ -57,8 +57,8 @@ definition harnessFunction(method f) returns bool =
     || f.selector == sig:claimRewardToSelf(address, uint256, address).selector
     || f.selector == sig:claimAllReward(address,address).selector
     || f.selector == sig:claimAllRewardOnBehalf(address,address,address).selector
-    || f.selector == sig:claimAllRewardToSelf(address).selector;
-    || f.selector == sig:updateUserData(address,address,address).selector;
+    || f.selector == sig:claimAllRewardToSelf(address).selector
+    || f.selector == sig:updateUserData(address,address,address).selector
     || f.selector == sig:updateRewardData(address,address).selector;
 
 definition claimFunction(method f) returns bool =
@@ -70,3 +70,34 @@ definition claimFunction(method f) returns bool =
     || f.selector == sig:claimRewardsToSelf(address[],uint256,address).selector;
 
 ////////////////// FUNCTIONS //////////////////////
+// setup helper to claimReward function
+function claimRewardSetup(env e, env e1,address user, address to, address asset) {
+    require e1.msg.sender == AToken;
+    require asset == AToken;
+    require e.block.timestamp == e1.block.timestamp;
+
+    uint256 userBalance = AToken.scaledBalanceOf(e, user);
+    uint256 totalSupply = AToken.scaledTotalSupply(e);
+    handleAction(e1, user, totalSupply, userBalance);
+}
+
+/*//////////////////////////////////////////////////////////////
+                                MISC
+//////////////////////////////////////////////////////////////*/
+ghost mapping(address => mapping(address => mapping(address => mathint))) userAccrued {
+    init_state axiom forall address asset. forall address reward. forall address user. userAccrued[user][asset][reward] == 0;
+}
+
+ghost mapping(address => mapping(address => mathint)) sumOfAllRewardAccrued {
+    init_state axiom forall address asset. forall address reward. sumOfAllRewardAccrued[asset][reward] == 0;
+}
+
+
+hook Sload uint128 val _assets[KEY address asset].rewards[KEY address reward].usersData[KEY address user].accrued STORAGE{
+    require userAccrued[user][asset][reward] == to_mathint(val);
+}
+
+hook Sstore _assets[KEY address asset].rewards[KEY address reward].usersData[KEY address user].accrued uint128 val (uint128 oldVal) STORAGE{
+    userAccrued[user][asset][reward] = to_mathint(val);
+    sumOfAllRewardAccrued[asset][reward] = sumOfAllRewardAccrued[asset][reward] + val - oldVal;
+}
