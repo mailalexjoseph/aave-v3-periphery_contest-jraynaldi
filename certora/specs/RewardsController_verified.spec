@@ -745,5 +745,5 @@ rule getAllUserRewardsConnection_single(
     uint256 totalSupply = AToken.scaledTotalSupply(e);
     handleAction(e1, user, totalSupply, userBalance);
 
-    assert to_mathint(unclaimedAmounts[1]) == userAccrued[user][asset][rewards[1]];
+    assert to_mathint(unclaimedAmounts[0]) == userAccrued[user][asset][rewards[0]];
 }
