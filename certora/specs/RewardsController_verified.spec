@@ -3,8 +3,7 @@ using TransferStrategyHarness as TransferStrategy;
 
 // TODO 
 // complete configure asset
-// bug13 getAllUserRewards connection
-// bug14 getAllUserRewards connection
+// getAllUserRewards connection timeouted on multi rewards
 
 ///////////////// Properties ///////////////////////
 /** Properties in consideration
