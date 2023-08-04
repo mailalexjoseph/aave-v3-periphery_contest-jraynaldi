@@ -689,6 +689,7 @@ rule updatingShouldEmitEvent_user(
     assert newIndex != oldIndex <=> updated;
 }
 
+//integrity of getUserAccriedRewards to show total of accrued reward of an user
 rule getUserAccruedRewards_integrity(
     env e,
     address user, 
@@ -701,4 +702,49 @@ rule getUserAccruedRewards_integrity(
     uint256 totalAccrued = getUserAccruedRewards(user, reward);
 
     assert to_mathint(totalAccrued) == userAccrued[user][assets[0]][reward] + userAccrued[user][assets[1]][reward];
+}
+
+// integrity of getAllUserRewards to sync with other function and get the correct show to the real value that other function called
+rule getAllUserRewardsConnection_single(
+    env e,
+    env e1,
+    address asset,
+    address user,
+    address to
+) {
+    require to != TransferStrategy;
+    require asset == 111;
+    require user == 333;
+    require to == 444;
+
+    uint256 numAvailableReward = getAvailableRewardsCount(asset);
+    require numAvailableReward == 1;
+
+    address[] assetsRewards = getRewardsByAsset(asset);
+    require assetsRewards.length == 1;
+
+    address[] rewards = getRewardsList();
+    require rewards.length == 1; 
+
+    require assetsRewards[0] == rewards[0];
+    require rewards[0] == RewardToken;
+
+    uint256[] unclaimedAmounts;
+
+    address[] assets;
+    require assets[0] == asset;
+    require assets.length == 1;
+
+    _, unclaimedAmounts = getAllUserRewards(e, assets, user);
+    require unclaimedAmounts.length == 1;
+
+    require e1.msg.sender == AToken;
+    require asset == AToken;
+    require e.block.timestamp == e1.block.timestamp;
+
+    uint256 userBalance = AToken.scaledBalanceOf(e, user);
+    uint256 totalSupply = AToken.scaledTotalSupply(e);
+    handleAction(e1, user, totalSupply, userBalance);
+
+    assert to_mathint(unclaimedAmounts[1]) == userAccrued[user][asset][rewards[1]];
 }
