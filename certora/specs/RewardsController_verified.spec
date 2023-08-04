@@ -3,7 +3,6 @@ using TransferStrategyHarness as TransferStrategy;
 
 // TODO 
 // complete configure asset
-// bug11 integrity getUserAccruedRewards
 // bug13 getAllUserRewards connection
 // bug14 getAllUserRewards connection
 
@@ -654,6 +653,7 @@ rule getAssetIndex_integrity(
     assert to_mathint(newIndex) == oldIndex + (changes);
 }
 
+// integrity of _updateRewardData that must return true if index changed
 rule updatingShouldEmitEvent_global(
     env e, 
     address asset, 
@@ -667,9 +667,9 @@ rule updatingShouldEmitEvent_global(
     index, updated = updateRewardData(e, asset, reward);
 
     assert index != oldIndex <=> updated;
-
 }
 
+// integrity of _updateUserData that must return true if index changed
 rule updatingShouldEmitEvent_user(
     env e, 
     address user,
@@ -687,5 +687,18 @@ rule updatingShouldEmitEvent_user(
     uint256 newIndex = getUserAssetIndex(user, asset, reward);
 
     assert newIndex != oldIndex <=> updated;
+}
 
+rule getUserAccruedRewards_integrity(
+    env e,
+    address user, 
+    address reward
+) {
+    address[] assets = getAssetsList();
+    require assets.length == 2;
+    require assets[0] != assets[1];
+
+    uint256 totalAccrued = getUserAccruedRewards(user, reward);
+
+    assert to_mathint(totalAccrued) == userAccrued[user][assets[0]][reward] + userAccrued[user][assets[1]][reward];
 }
