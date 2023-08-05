@@ -1,0 +1,14 @@
+diff --git a/contracts/rewards/RewardsDistributor.sol b/gambit_out/mutants/5/contracts/rewards/RewardsDistributor.sol
+index 04d057a..5aeb397 100644
+--- a/contracts/rewards/RewardsDistributor.sol
++++ b/contracts/rewards/RewardsDistributor.sol
+@@ -175,7 +175,8 @@ abstract contract RewardsDistributor is IRewardsDistributor {
+     uint32 newDistributionEnd
+   ) external override onlyEmissionManager {
+     uint256 oldDistributionEnd = _assets[asset].rewards[reward].distributionEnd;
+-    _assets[asset].rewards[reward].distributionEnd = newDistributionEnd;
++    /// AssignmentMutation(`newDistributionEnd` |==> `1`) of: `_assets[asset].rewards[reward].distributionEnd = newDistributionEnd;`
++    _assets[asset].rewards[reward].distributionEnd = 1;
+ 
+     emit AssetConfigUpdated(
+       asset,

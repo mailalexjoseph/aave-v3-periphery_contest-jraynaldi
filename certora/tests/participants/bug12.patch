@@ -1,0 +1,14 @@
+diff --git a/contracts/rewards/RewardsDistributor.sol b/gambit_out/mutants/20/contracts/rewards/RewardsDistributor.sol
+index 04d057a..8ae1db5 100644
+--- a/contracts/rewards/RewardsDistributor.sol
++++ b/contracts/rewards/RewardsDistributor.sol
+@@ -359,7 +359,8 @@ abstract contract RewardsDistributor is IRewardsDistributor {
+     uint256 assetUnit;
+     uint256 numAvailableRewards = _assets[asset].availableRewardsCount;
+     unchecked {
+-      assetUnit = 10**_assets[asset].decimals;
++      /// AssignmentMutation(`10**_assets[asset].decimals` |==> `1`) of: `assetUnit = 10**_assets[asset].decimals;`
++      assetUnit = 1;
+     }
+ 
+     if (numAvailableRewards == 0) {

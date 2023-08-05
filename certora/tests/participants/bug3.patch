@@ -1,0 +1,14 @@
+diff --git a/contracts/rewards/RewardsDistributor.sol b/gambit_out/mutants/12/contracts/rewards/RewardsDistributor.sol
+index 04d057a..05626e5 100644
+--- a/contracts/rewards/RewardsDistributor.sol
++++ b/contracts/rewards/RewardsDistributor.sol
+@@ -300,7 +300,8 @@ abstract contract RewardsDistributor is IRewardsDistributor {
+     bool indexUpdated;
+     if (newIndex != oldIndex) {
+       require(newIndex <= type(uint104).max, 'INDEX_OVERFLOW');
+-      indexUpdated = true;
++      /// AssignmentMutation(`true` |==> `false`) of: `indexUpdated = true;`
++      indexUpdated = false;
+ 
+       //optimization: storing one after another saves one SSTORE
+       rewardData.index = uint104(newIndex);

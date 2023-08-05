@@ -1,0 +1,14 @@
+diff --git a/contracts/rewards/RewardsDistributor.sol b/gambit_out/mutants/14/contracts/rewards/RewardsDistributor.sol
+index 04d057a..5cbaf10 100644
+--- a/contracts/rewards/RewardsDistributor.sol
++++ b/contracts/rewards/RewardsDistributor.sol
+@@ -303,7 +303,8 @@ abstract contract RewardsDistributor is IRewardsDistributor {
+       indexUpdated = true;
+ 
+       //optimization: storing one after another saves one SSTORE
+-      rewardData.index = uint104(newIndex);
++      /// AssignmentMutation(`uint104(newIndex)` |==> `1`) of: `rewardData.index = uint104(newIndex);`
++      rewardData.index = 1;
+       rewardData.lastUpdateTimestamp = block.timestamp.toUint32();
+     } else {
+       rewardData.lastUpdateTimestamp = block.timestamp.toUint32();
