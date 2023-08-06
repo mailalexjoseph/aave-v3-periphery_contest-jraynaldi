@@ -157,6 +157,12 @@ rule claimShouldUpdate(
     uint256 indexAfter = getAssetRewardIndex(assets[0], reward);
     assert claimFunction(f) => (indexAfter != indexBefore 
         <=> oldIndex != newIndex);
+    assert amount == 0 
+        && (
+            f.selector == sig:claimRewardsToSelf(address[],uint256,address).selector
+            || f.selector == sig:claimRewards(address[],uint256,address,address).selector
+            || f.selector == sig:claimRewardsOnBehalf(address[],uint256,address,address,address).selector
+        )=> indexAfter == indexBefore;
 }
 
 // cannot transfer reward to address 0 
@@ -529,7 +535,6 @@ rule claimAllRewardOnBehalf(
     require userAccruedBefore >= 0;
 
     claimAllRewardsOnBehalf(e, assets,user, to);
-
 
     mathint userAccruedAfter = userAccrued[user][asset][reward];
     uint256 rewardBalanceAfter = RewardToken.balanceOf(e, to);
