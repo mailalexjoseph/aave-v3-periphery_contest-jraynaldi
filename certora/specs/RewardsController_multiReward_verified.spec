@@ -1,5 +1,5 @@
 import "methods/Methods_base.spec";
-using TransferStrategyMultiRewardHarnessWithLinks as TransferStrategyMulti;
+using TransferStrategyMultiRewardHarnessWithLinks as TransferStrategy;
 using DummyERC20_rewardTokenB as RewardTokenB;
 
 ///////////////// Properties ///////////////////////
@@ -34,7 +34,7 @@ rule claimAllRewardOnBehalf_MultiReward(
 ) {
     claimRewardSetup(e,e1,user, to,asset);
 
-    require to != TransferStrategyMulti;
+    require to != TransferStrategy;
 
 
     uint256 numAvailableReward = getAvailableRewardsCount(asset);
@@ -76,7 +76,7 @@ rule getAllUserRewardsConnection (
     address user,
     address to
 ) {
-    require to != TransferStrategyMulti;
+    require to != TransferStrategy;
     require asset == 111;
     require user == 333;
     require to == 444;
@@ -121,4 +121,75 @@ rule getAllUserRewardsConnection (
     handleAction(e1, user, totalSupply, userBalance);
 
     assert to_mathint(unclaimedAmounts[1]) == userAccrued[user][asset][rewards[1]];
+}
+
+rule claimRewardOnBehalf_MultiAsset(
+    env e,
+    env e1,
+    uint256 amount,
+    address user,
+    address to,
+    address reward
+) {
+    address[] assets;
+    require assets.length == 2;
+
+    claimRewardSetup(e,e1,user, to,assets[0]);
+    claimRewardSetup(e,e1,user, to,assets[1]);
+
+    require to != TransferStrategy;
+
+    mathint userAccruedBefore = userAccrued[user][assets[1]][reward];
+    require userAccruedBefore >= 0;
+
+    claimRewardsOnBehalf(e, assets, amount, user, to, reward);
+
+    mathint userAccruedAfter = userAccrued[user][assets[1]][reward];
+
+    assert userAccruedAfter == userAccruedBefore - amount 
+        <=> userAccruedBefore >= to_mathint(amount) || amount == 0;
+    assert userAccruedAfter == 0 <=> userAccruedBefore <= to_mathint(amount);
+}
+
+rule claimAllRewardOnBehalf_MultiReward(
+    env e,
+    env e1,
+    address asset,
+    address user,
+    address to
+) {
+    claimRewardSetup(e,e1,user, to,asset);
+
+    require to != TransferStrategy;
+
+
+    uint256 numAvailableReward = getAvailableRewardsCount(asset);
+    require numAvailableReward == 2;
+
+    address[] assetsRewards = getRewardsByAsset(asset);
+    require assetsRewards.length == 2;
+
+    address[] rewards = getRewardsList();
+    require rewards.length == 2; 
+
+    require assetsRewards[0] == rewards[0];
+    require assetsRewards[1] == rewards[1];
+    require rewards[0] == RewardToken;
+    require rewards[1] == RewardTokenB;
+
+    address[] assets;
+    require assets[0] == asset;
+    require assets.length == 1;
+
+    uint256 rewardBalanceBefore = RewardTokenB.balanceOf(e, to);
+    mathint userAccruedBefore = userAccrued[user][asset][rewards[1]];
+    require userAccruedBefore >= 0;
+
+    claimAllRewardsOnBehalf(e, assets,user, to);
+
+    mathint userAccruedAfter = userAccrued[user][asset][rewards[1]];
+    uint256 rewardBalanceAfter = RewardTokenB.balanceOf(e, to);
+
+    assert userAccruedAfter == 0 <=> e.msg.sender == getClaimer(user);
+    assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
