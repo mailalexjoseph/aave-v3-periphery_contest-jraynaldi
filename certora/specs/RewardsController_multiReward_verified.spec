@@ -25,6 +25,7 @@ rule setEmissionPerSecond_integrity(
     assert getEmissionPerSecond(asset, rewards[1]) == assert_uint256(emissionPerSeconds[1]);
 }
 
+//integrity of claimAllRewardsOnBehalf on the case of multi reward system
 rule claimAllRewardOnBehalf_MultiReward(
     env e,
     env e1,
@@ -124,6 +125,8 @@ rule getAllUserRewardsConnection (
     assert to_mathint(unclaimedAmounts[1]) == userAccrued[user][asset][rewards[1]];
 }
 
+
+//integrity of claimRewardsOnBehalf on the case of multi assets system
 rule claimRewardOnBehalf_MultiAsset(
     env e,
     env e1,
@@ -152,6 +155,7 @@ rule claimRewardOnBehalf_MultiAsset(
     assert userAccruedAfter == 0 <=> userAccruedBefore <= to_mathint(amount);
 }
 
+//integrity of claimAllRewardsOnBehalf on the case of multi assets system
 rule claimAllRewardOnBehalf_MultiAsset(
     env e,
     env e1,
