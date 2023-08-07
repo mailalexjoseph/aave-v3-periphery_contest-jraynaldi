@@ -196,6 +196,7 @@ rule addressZeroNoClaim(
     assert rewardAccruedAfter >= rewardAccruedBefore;
 }
 
+// lastUpdateTimestamp should never greater than the block.timestamp or distribution end
 rule lastUpdateTimestamp_LTE_blockTimestamp_distributionEnd(
     env e,
     method f,
