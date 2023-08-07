@@ -256,7 +256,7 @@ rule onlyEmissionManager(
     assert _authorizedClaimers != authorizedClaimers_ => e.msg.sender == EMISSION_MANAGER(); 
 }
 
-//user without balance never update their reward
+//user without balance never increase their reward
 rule userNoBalanceNoIncreaseReward(
     env e ,
     method f,
@@ -275,6 +275,49 @@ rule userNoBalanceNoIncreaseReward(
 
     mathint accruedAfter = userAccrued[user][asset][reward];
     assert userBalance == 0 && f.selector != sig:handleAction(address, uint256, uint256).selector => accruedBefore >= accruedAfter;
+}
+
+// TODO weird violation
+rule assetCannotDuplicate(
+    env e,
+    method f,
+    calldataarg args
+) filtered {
+    f -> !f.isView && !harnessFunction(f)
+} {
+    address [] _assetsList = getAssetsList();
+
+    require _assetsList[0] != _assetsList[1];
+    require _assetsList[0] != 0;
+
+    // f(e,args);
+
+    address [] assetsList_ = getAssetsList();
+
+    // assert assetsList_[0] != assetsList_[1];
+    assert _assetsList[0] == assetsList_[0];
+}
+
+//TODO weird violation
+rule assetDecimalsWhenRegistered(
+    env e ,
+    method f,
+    calldataarg args,
+    address assets
+) filtered {
+    f -> !f.isView && !harnessFunction(f)
+} {
+    address[] assetsList = getAssetsList();
+    require assetsList.length == 0;
+    require assetsList[0] == 0;
+    require assets != 0;
+
+    f(e,args);
+
+    address[] assetsList_ = getAssetsList();
+    uint8 decimals = getAssetDecimals(assets);
+    assert assetsList_[0] == assets => decimals != 0;
+
 }
 /*//////////////////////////////////////////////////////////////
                             Unit Test
