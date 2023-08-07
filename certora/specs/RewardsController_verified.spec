@@ -255,6 +255,27 @@ rule onlyEmissionManager(
     assert _emissionPerSecond != emissionPerSecond_ => e.msg.sender == EMISSION_MANAGER(); 
     assert _authorizedClaimers != authorizedClaimers_ => e.msg.sender == EMISSION_MANAGER(); 
 }
+
+//user without balance never update their reward
+rule userNoBalanceNoIncreaseReward(
+    env e ,
+    method f,
+    calldataarg args,
+    address user, 
+    address asset, 
+    address reward
+) filtered {
+    f -> !f.isView && !harnessFunction(f)
+} {
+    require asset == AToken;
+    mathint accruedBefore = userAccrued[user][asset][reward];
+    uint256 userBalance = AToken.scaledBalanceOf(e, user);
+
+    f(e,args);
+
+    mathint accruedAfter = userAccrued[user][asset][reward];
+    assert userBalance == 0 && f.selector != sig:handleAction(address, uint256, uint256).selector => accruedBefore >= accruedAfter;
+}
 /*//////////////////////////////////////////////////////////////
                             Unit Test
 //////////////////////////////////////////////////////////////*/
