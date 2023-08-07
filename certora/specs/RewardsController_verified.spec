@@ -223,6 +223,38 @@ rule lastUpdateTimestamp_LTE_blockTimestamp_distributionEnd(
     assert _lastUpdateTimestamp <= _distributionEnd;
     assert _lastUpdateTimestamp <= e.block.timestamp;
 }
+
+// only emission manager can change several variable inside the contract
+rule onlyEmissionManager(
+    env e ,
+    method f, 
+    calldataarg args,
+    address asset, 
+    address reward,
+    address user
+) filtered {
+    f -> !f.isView && !harnessFunction(f)
+} {
+    address _transferStrategyAddress = getTransferStrategy(reward);
+    address _rewardOracleAddress = getRewardOracle(reward);
+    uint256 _distributionEnd = getDistributionEnd(asset, reward);
+    uint256 _emissionPerSecond = getEmissionPerSecond(asset,reward);
+    address _authorizedClaimers = getClaimer(user);
+
+    f(e, args);
+
+    address transferStrategyAddress_ = getTransferStrategy(reward);
+    address rewardOracleAddress_ = getRewardOracle(reward);
+    uint256 distributionEnd_ = getDistributionEnd(asset, reward);
+    uint256 emissionPerSecond_ = getEmissionPerSecond(asset,reward);
+    address authorizedClaimers_ = getClaimer(user);
+
+    assert _transferStrategyAddress != transferStrategyAddress_ => e.msg.sender == EMISSION_MANAGER();
+    assert _rewardOracleAddress != rewardOracleAddress_ => e.msg.sender == EMISSION_MANAGER();
+    assert _distributionEnd != distributionEnd_ => e.msg.sender == EMISSION_MANAGER();
+    assert _emissionPerSecond != emissionPerSecond_ => e.msg.sender == EMISSION_MANAGER(); 
+    assert _authorizedClaimers != authorizedClaimers_ => e.msg.sender == EMISSION_MANAGER(); 
+}
 /*//////////////////////////////////////////////////////////////
                             Unit Test
 //////////////////////////////////////////////////////////////*/
