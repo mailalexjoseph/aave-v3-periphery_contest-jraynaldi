@@ -78,7 +78,7 @@ rule claimAllRewardOnBehalf_MultiReward(
     assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + userAccruedBefore;
 }
 
-//TODO timeouted
+//getAllUserRewards integrity for multi rewards cases, this functions should return accurately as a preview
 rule getAllUserRewardsConnection (
     env e,
     env e1,
@@ -114,14 +114,6 @@ rule getAllUserRewardsConnection (
 
     _, unclaimedAmounts = getAllUserRewards(e, assets, user);
     require unclaimedAmounts.length == 2;
-
-    // uint256 rewardBalanceBefore = RewardTokenB.balanceOf(e, to);
-
-    // claimAllRewardsOnBehalf(e, assets,user, to);
-
-    // uint256 rewardBalanceAfter = RewardTokenB.balanceOf(e, to);
-
-    // assert to_mathint(rewardBalanceAfter) == rewardBalanceBefore + unclaimedAmounts[1];
 
     require e1.msg.sender == AToken;
     require asset == AToken;

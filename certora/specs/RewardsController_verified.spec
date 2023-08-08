@@ -1,13 +1,6 @@
 import "methods/Methods_base.spec";
 using TransferStrategyHarness as TransferStrategy;
 
-// TODO 
-// complete configure asset
-// getAllUserRewards connection timeouted on multi rewards
-// Multi Assets configuration
-// Multi Reward configuration
-// bug3,5,7,8,10
-
 ///////////////// Properties ///////////////////////
 /** Properties in consideration
 * user reward index should never decrease alongside with reward index all over the contract
@@ -354,7 +347,7 @@ rule rewardListCannotDuplicate(
                             Unit Test
 //////////////////////////////////////////////////////////////*/
 
-//TODO not completed Update Reward Data needed
+//Integrity of configure assets, should able to set several configuration.
 rule configureAssetsSingle(
     env e,
     env e1,
