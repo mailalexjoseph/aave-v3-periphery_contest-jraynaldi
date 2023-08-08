@@ -278,7 +278,7 @@ rule userNoBalanceNoIncreaseReward(
     assert userBalance == 0 && f.selector != sig:handleAction(address, uint256, uint256).selector => accruedBefore >= accruedAfter;
 }
 
-// asset cannot duplicate and configure asset should update new data for that spesific assets
+// asset cannot duplicate and configure asset should update new data for that spesific assets 
 rule assetCannotDuplicate(
     env e,
     method f,
