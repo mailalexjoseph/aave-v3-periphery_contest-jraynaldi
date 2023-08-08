@@ -278,7 +278,7 @@ rule userNoBalanceNoIncreaseReward(
     assert userBalance == 0 && f.selector != sig:handleAction(address, uint256, uint256).selector => accruedBefore >= accruedAfter;
 }
 
-// TODO weird violation
+// asset cannot duplicate and configure asset should update new data for that spesific assets
 rule assetCannotDuplicate(
     env e,
     method f,
@@ -290,16 +290,21 @@ rule assetCannotDuplicate(
 
     require _assetsList[0] != _assetsList[1];
     require _assetsList[0] != 0;
+    require _assetsList.length == 1;
+    require _assetsList[0] == AToken;
+    require AToken.decimals(e) != 0;
+    require getAssetDecimals(AToken) != 0;
 
-    // f(e,args);
+    f(e,args);
 
     address [] assetsList_ = getAssetsList();
+    require assetsList_.length == 1 || assetsList_.length == 2;
 
-    // assert assetsList_[0] != assetsList_[1];
     assert _assetsList[0] == assetsList_[0];
+    assert assetsList_.length == 2 => assetsList_[0] != assetsList_[1];
 }
 
-//TODO weird violation
+//register the asset should changed the decimals inside the contracts storage
 rule assetDecimalsWhenRegistered(
     env e ,
     method f,
@@ -312,12 +317,15 @@ rule assetDecimalsWhenRegistered(
     require assetsList.length == 0;
     require assetsList[0] == 0;
     require assets != 0;
+    require assets == AToken;
 
     f(e,args);
 
     address[] assetsList_ = getAssetsList();
+    require assetsList_.length == 0 || assetsList_.length == 1;
     uint8 decimals = getAssetDecimals(assets);
-    assert assetsList_[0] == assets => decimals != 0;
+    assert assetsList_.length == 0 => assetsList[0] == 0;
+    assert assetsList_[0] == assets && AToken.decimals(e) != 0 && assetsList_.length == 1 => decimals != 0;
 
 }
 /*//////////////////////////////////////////////////////////////
