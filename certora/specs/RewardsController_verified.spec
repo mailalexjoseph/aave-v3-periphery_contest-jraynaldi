@@ -328,6 +328,28 @@ rule assetDecimalsWhenRegistered(
     assert assetsList_[0] == assets && AToken.decimals(e) != 0 && assetsList_.length == 1 => decimals != 0;
 
 }
+
+// rewardsList Should not have duplicate reward address. 
+rule rewardListCannotDuplicate(
+    env e,
+    method f,
+    calldataarg args
+) filtered {
+    f -> !f.isView && !harnessFunction(f)
+} {
+    address[] rewardList = getRewardsList();
+    require rewardList.length == 1;
+    require rewardList[0] != 0;
+    require isRewardEnabled(rewardList[0]);
+    
+    address rewardInput;
+
+    f(e,args);
+
+    address[] rewardList_ = getRewardsList();
+    require rewardList_.length == 1 || rewardList_.length == 2;
+    assert rewardList_.length == 2 && rewardList_[1] == rewardInput => rewardList_[1] != rewardList_[0];
+}
 /*//////////////////////////////////////////////////////////////
                             Unit Test
 //////////////////////////////////////////////////////////////*/
