@@ -16,7 +16,16 @@ rule setEmissionPerSecond_integrity(
     uint256 lastUpdateTimestamp;
     _,_,lastUpdateTimestamp,_ = getRewardsData(asset,rewards[0]);
     uint256 decimal = getAssetDecimals(asset);
+
+    uint256 newIndex;
+    _, newIndex = getAssetIndex(e, asset, rewards[1]);
+
     setEmissionPerSecond(e, asset, rewards, emissionPerSeconds);
+
+    uint256 index;
+    index,_,_,_ = getRewardsData(asset,rewards[1]);
+
+    assert decimal != 0 => index == newIndex;
     assert getEmissionPerSecond(asset, rewards[0]) == assert_uint256(emissionPerSeconds[0]) 
         <=> rewards.length == emissionPerSeconds.length
         && decimal != 0
