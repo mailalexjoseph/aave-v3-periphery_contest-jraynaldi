@@ -1,0 +1,14 @@
+diff --git a/contracts/rewards/RewardsDistributor.sol b/gambit_out/mutants/9/contracts/rewards/RewardsDistributor.sol
+index 04d057a..4dc0b3f 100644
+--- a/contracts/rewards/RewardsDistributor.sol
++++ b/contracts/rewards/RewardsDistributor.sol
+@@ -268,7 +268,8 @@ abstract contract RewardsDistributor is IRewardsDistributor {
+       // Configure emission and distribution end of the reward per asset
+       uint88 oldEmissionsPerSecond = rewardConfig.emissionPerSecond;
+       uint32 oldDistributionEnd = rewardConfig.distributionEnd;
+-      rewardConfig.emissionPerSecond = rewardsInput[i].emissionPerSecond;
++      /// AssignmentMutation(`rewardsInput[i].emissionPerSecond` |==> `1`) of: `rewardConfig.emissionPerSecond = rewardsInput[i].emissionPerSecond;`
++      rewardConfig.emissionPerSecond = 1;
+       rewardConfig.distributionEnd = rewardsInput[i].distributionEnd;
+ 
+       emit AssetConfigUpdated(

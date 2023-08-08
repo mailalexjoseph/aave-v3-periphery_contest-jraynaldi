@@ -1,0 +1,14 @@
+diff --git a/contracts/rewards/RewardsDistributor.sol b/gambit_out/mutants/17/contracts/rewards/RewardsDistributor.sol
+index 04d057a..c261faf 100644
+--- a/contracts/rewards/RewardsDistributor.sol
++++ b/contracts/rewards/RewardsDistributor.sol
+@@ -331,7 +331,8 @@ abstract contract RewardsDistributor is IRewardsDistributor {
+     uint256 userIndex = rewardData.usersData[user].index;
+     uint256 rewardsAccrued;
+     bool dataUpdated;
+-    if ((dataUpdated = userIndex != newAssetIndex)) {
++    /// AssignmentMutation(`userIndex != newAssetIndex` |==> `false`) of: `if ((dataUpdated = userIndex != newAssetIndex)) {`
++    if ((dataUpdated = false)) {
+       // already checked for overflow in _updateRewardData
+       rewardData.usersData[user].index = uint104(newAssetIndex);
+       if (userBalance != 0) {
