@@ -762,8 +762,6 @@ rule getAssetIndex_integrity(
     uint256 assetIndex;
     uint256 distributionEnd;
     assetIndex, emissionPerSecond, lastUpdateTimestamp, distributionEnd = getRewardsData(asset, reward);
-    require lastUpdateTimestamp <= e.block.timestamp;
-    require lastUpdateTimestamp <= distributionEnd;
 
     uint256 totalSupply = getTotalSupply(asset);
     uint256 decimal = getAssetDecimals(asset);
@@ -775,7 +773,7 @@ rule getAssetIndex_integrity(
     uint256 currentTimestamp = e.block.timestamp > distributionEnd ? distributionEnd : e.block.timestamp;
 
     mathint firstTirm = (emissionPerSecond * (currentTimestamp - lastUpdateTimestamp) * 10 ^ decimal);
-    mathint changes = totalSupply == 0 ? 0 : firstTirm / totalSupply;
+    mathint changes = totalSupply == 0 || firstTirm < 0 ? 0 : firstTirm / totalSupply;
 
     assert oldIndex == assetIndex;
     assert oldIndex == newIndex 
