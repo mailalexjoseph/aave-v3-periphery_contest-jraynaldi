@@ -75,4 +75,10 @@ jobs:
       max-parallel: 16
       matrix:
         patch: ${{ fromJson(needs.list-patches.outputs.matrix) }} 
-        rule: ${{ fromJson(needs.list-confs.outputs.matrix) }} 
+        rule: 
+        - certora/conf/default.conf --rule getUserAccruedRewards_integrity
+        - certora/conf/verifyRewardsController_verified.conf --rule claimAllRewardToSelf
+        - certora/conf/verifyRewardsController_verified.conf --rule configureAssetsSingle
+        - certora/conf/verifyRewardsController_verified.conf --rule getUserRewardsConnection
+        - certora/conf/verifyRewardsController_verified.conf --rule claimAllReward
+        - certora/conf/verifyRewardsController_verified.conf --rule claimAllRewardOnBehalf
