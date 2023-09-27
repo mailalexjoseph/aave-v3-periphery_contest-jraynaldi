@@ -1,0 +1,8 @@
+
+# SINGLE REWARD UNIT TEST
+certoraRun certora/conf/verifyRewardsController_verified.conf --rule getAssetIndex_integrity setRewardOracle_integrity setTransferStrategy_integrity claimAllRewardOnBehalf claimAllRewardToSelf setDistributionEnd_integrity claimRewardToSelf claimReward_integrity claimAllReward handleAction_integrity_global configureAssetsSingle handleAction_integrity_user claimRewardOnBehalf 
+
+# SINGLE REWARD INVARIANT
+
+# MULTI REWARD
+certoraRun certora/conf/verifyRewardsController_multiReward_verified.conf
